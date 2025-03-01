@@ -17,7 +17,7 @@ public class CurrencyService implements ICurrencyService {
 
 
     @Override
-    public double exchange(String currencyFrom, double amount, String currencyTo) throws InvalidInputDataException {
+    public synchronized double exchange(String currencyFrom, double amount, String currencyTo) throws InvalidInputDataException {
         if (amount <= 0) {
             throw new InvalidInputDataException("Wartość waluty powinna być większa niż 0");
         }
@@ -35,7 +35,7 @@ public class CurrencyService implements ICurrencyService {
 
             return rate * amount;
         } catch (Exception e) {
-            throw new InvalidInputDataException("Error retrieving rate: " + e.getMessage());
+            throw new InvalidInputDataException("Błąd pobierania danych: " + e.getMessage());
         }
     }
 

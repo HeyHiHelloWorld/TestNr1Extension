@@ -1,1 +1,19 @@
-[{"size":5.0},{"size":1.0},{"size":50.0},{"size":3.0},{"size":2.0,"width":4.0},null]
+{
+  "figureList" : [ {
+    "type" : "circle",
+    "size" : 5.0
+  }, {
+    "type" : "circle",
+    "size" : 1.0
+  }, {
+    "type" : "square",
+    "size" : 50.0
+  }, {
+    "type" : "square",
+    "size" : 3.0
+  }, {
+    "type" : "rectangle",
+    "size" : 2.0,
+    "width" : 4.0
+  }, null ]
+}

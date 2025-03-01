@@ -11,6 +11,8 @@ public class Square extends Figure {
         super(size);
     }
 
+    public Square() {
+    }
 
     @Override
     public double getSize() {

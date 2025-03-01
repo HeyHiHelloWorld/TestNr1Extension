@@ -1,7 +1,6 @@
 package pl.kurs.zadanie01.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
@@ -11,8 +10,11 @@ public class Circle extends Figure {
 
 
     @JsonCreator
-    public Circle(@JsonProperty("radius") double radius) {
+    public Circle(double radius) {
         super(radius);
+    }
+
+    public Circle() {
     }
 
     @Override

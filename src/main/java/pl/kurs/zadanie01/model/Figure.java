@@ -1,9 +1,11 @@
 package pl.kurs.zadanie01.model;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.Objects;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Circle.class, name = "circle"),
         @JsonSubTypes.Type(value = Rectangle.class, name = "rectangle"),
@@ -46,8 +48,7 @@ public abstract class Figure {
 
     @Override
     public String toString() {
-        return "type=" + getClass().getSimpleName().toLowerCase() + " " +
-                "size=" + size;
-
+        return getClass().getSimpleName() + "{" +
+                "size=" + size + '\'';
     }
 }

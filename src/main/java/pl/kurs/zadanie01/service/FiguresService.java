@@ -8,14 +8,24 @@ import pl.kurs.zadanie01.model.Figure;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 public class FiguresService implements Serializable {
     private ObjectMapper objectMapper = ObjectMapperHolder.INSTANCE.getObjectMapper();
+    private List<Figure> figureList;
 
     public FiguresService() {
+    }
+
+    public List<Figure> getFigureList() {
+        return figureList;
+    }
+
+    public void setFigureList(List<Figure> figureList) {
+        this.figureList = figureList;
     }
 
     public Figure findFigureWithGreatestArea(List<Figure> figureList) {
@@ -34,13 +44,14 @@ public class FiguresService implements Serializable {
     }
 
     public void exportListToJson(List<Figure> figureList, String filePath) throws IOException {
-        objectMapper.writeValue(new File(filePath), figureList);
+        FiguresService figuresService = new FiguresService();
+        figuresService.setFigureList(figureList);
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(filePath), figuresService);
     }
 
     public List<Figure> importListFromJson(String filePath) throws IOException {
-        return objectMapper.readValue(new File(filePath),
-                new TypeReference<>() {
-                });
+        FiguresService figuresService = objectMapper.readValue(new File(filePath), FiguresService.class);
+        return figuresService.getFigureList();
     }
 
 

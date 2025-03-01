@@ -1,7 +1,5 @@
 package pl.kurs.zadanie01.service;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import pl.kurs.zadanie01.model.Circle;
 import pl.kurs.zadanie01.model.Rectangle;
 import pl.kurs.zadanie01.model.Square;
@@ -22,19 +20,16 @@ public class ShapeFactory {
         return INSTANCE;
     }
 
-    @JsonCreator
-    public Circle createCircle(@JsonProperty("radius") double r) {
+    public Circle createCircle(double r) {
         return circleCache.computeIfAbsent(r, c -> new Circle(r));
     }
 
-    @JsonCreator
-    public Rectangle createRectangle(@JsonProperty("width") double width, @JsonProperty("height") double height) {
+    public Rectangle createRectangle(double width, double height) {
         String key = width + " " + height;
         return rectangleCache.computeIfAbsent(key, k -> new Rectangle(width, height));
     }
 
-    @JsonCreator
-    public Square createSquare(@JsonProperty("side") double a) {
+    public Square createSquare(double a) {
         return squareCache.computeIfAbsent(a, s -> new Square(a));
     }
 

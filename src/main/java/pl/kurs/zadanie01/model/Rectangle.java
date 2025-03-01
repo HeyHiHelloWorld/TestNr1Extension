@@ -16,6 +16,9 @@ public class Rectangle extends Figure {
         this.width = width;
     }
 
+    public Rectangle() {
+    }
+
     public double getWidth() {
         return width;
     }
@@ -69,7 +72,8 @@ public class Rectangle extends Figure {
 
     @Override
     public String toString() {
-        return super.toString() + " " +
-                "width=" + width;
+        return super.toString() +
+                "width=" + width +
+                '}';
     }
 }

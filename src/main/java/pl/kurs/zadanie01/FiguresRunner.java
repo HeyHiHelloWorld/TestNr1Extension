@@ -30,13 +30,13 @@ public class FiguresRunner {
         System.out.println(c2.calculateArea());
         System.out.println(r2.calculatePerimeter());
 
-        List<Figure> figureList = List.of(c1, c2, c3, r1, r2);
+        List<Figure> figureList = List.of(c1, c2, c3, r1, r2, s1);
 
         System.out.println(fs.findFigureWithGreatestArea(figureList));
         System.out.println(fs.findFigureWithGreatestPerimeterPerSelectedType(figureList, Circle.class));
 
-//        fs.exportListToJson(figureList, "anotherTestToJson3.json");
-//        System.out.println(fs.importListFromJson("anotherTestToJson3.json"));
+//        fs.exportListToJson(figureList, "test10.json");
+        System.out.println(fs.importListFromJson("test10.json"));
 
     }
 }

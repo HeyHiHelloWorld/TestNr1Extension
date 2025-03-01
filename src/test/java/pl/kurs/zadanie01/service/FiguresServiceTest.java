@@ -16,16 +16,19 @@ import pl.kurs.zadanie01.model.Square;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class FiguresServiceTest {
     private ShapeFactory shapeFactory;
     private List<Figure> figureList;
-    @Mock
     private ObjectMapper objectMapper;
+
     @InjectMocks
     private FiguresService figuresService;
 
@@ -123,8 +126,36 @@ public class FiguresServiceTest {
         String filePath = "test_output.json";
 
         figuresService.exportListToJson(figureList, filePath);
+    }
 
-        Mockito.verify(objectMapper, Mockito.times(1)).writeValue(new File(filePath), figureList);
+    @Test
+    public void testExportListToJson() throws IOException {
+        String fileName = "test1.json";
+        List<Figure> figuresTestList = Arrays.asList(shapeFactory.createCircle(3), shapeFactory.createSquare(5), shapeFactory.createRectangle(5, 10));
+        figuresService.exportListToJson(figuresTestList, fileName);
+
+        File file = new File(fileName);
+        assertTrue(file.exists());
+
+        FiguresService expectedResult = objectMapper.readValue(file, FiguresService.class);
+        assertNotNull(expectedResult.getFigureList());
+
+        assertEquals(3, expectedResult.getFigureList().size());
+        assertEquals(shapeFactory.createSquare(5).getClass().getSimpleName(), expectedResult.getFigureList().get(1).getClass().getSimpleName());
+    }
+
+    @Test
+    public void testImportListFromJson() throws IOException {
+        String fileName = "importTest";
+        figuresService.setFigureList(Arrays.asList(shapeFactory.createCircle(4), shapeFactory.createSquare(10)));
+
+        objectMapper.writeValue(new File(fileName), figuresService);
+
+        List<Figure> expectedResult = figuresService.importListFromJson(fileName);
+
+        assertNotNull(expectedResult);
+        assertEquals(2, expectedResult.size());
+        assertEquals(shapeFactory.createCircle(4), expectedResult.get(0));
     }
 
 }
