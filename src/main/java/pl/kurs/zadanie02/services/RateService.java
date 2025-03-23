@@ -23,6 +23,10 @@ public class RateService implements IRateService {
 
     @Override
     public double getRate(String currencyFrom, String currencyTo, double amount) throws InvalidInputDataException {
+        if (amount <= 0) {
+            throw new InvalidInputDataException("Amount must be positive");
+        }
+
         try {
             StringBuilder response = createHttpRequest(currencyFrom, currencyTo, amount);
             JsonNode mainNode = objectMapper.readTree(response.toString());
@@ -48,16 +52,18 @@ public class RateService implements IRateService {
             throw new InvalidInputDataException("Error in API request: Response code " + responseCode);
         }
 
-        Scanner scanner = new Scanner(connection.getInputStream());
-        StringBuilder response = new StringBuilder();
-        while (scanner.hasNext()) {
-            response.append(scanner.nextLine());
+        try (
+                Scanner scanner = new Scanner(connection.getInputStream())
+        ) {
+            StringBuilder response = new StringBuilder();
+            while (scanner.hasNext()) {
+                response.append(scanner.nextLine());
+            }
+            return response;
         }
-        scanner.close();
-        return response;
+        finally {
+            connection.disconnect();
+        }
     }
-
-
-
 
 }

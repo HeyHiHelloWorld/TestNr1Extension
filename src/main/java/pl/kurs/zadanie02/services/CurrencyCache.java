@@ -11,10 +11,12 @@ public class CurrencyCache {
     private final long refreshTime;
     private IRateService rateService;
 
-    public CurrencyCache(long refreshTime) {
+
+    public CurrencyCache(long refreshTime, IRateService rateService) {
         this.currencyValueMap = new ConcurrentHashMap<>();
         this.creationTime = System.currentTimeMillis();
         this.refreshTime = refreshTime;
+        this.rateService = rateService;
     }
 
     public Map<String, Double> getData(String currencyFrom, String currencyTo, double amount) throws InvalidInputDataException {
@@ -25,7 +27,6 @@ public class CurrencyCache {
             creationTime = currentTime;
         }
         return currencyValueMap;
-
     }
 
     public Double getValue(String key) {

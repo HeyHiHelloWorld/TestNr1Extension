@@ -2,7 +2,6 @@ package pl.kurs.zadanie02.services;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -19,16 +18,13 @@ public class CurrencyServiceTest {
     @Mock
     private CurrencyCache currencyCache;
 
-
-    @InjectMocks
     private CurrencyService currencyService;
     private static final long CACHE_DURATION = 10;
 
     @Before
-    public void init() throws InvalidInputDataException {
-        currencyService = new CurrencyService(rateService, CACHE_DURATION);
-        currencyCache = new CurrencyCache(CACHE_DURATION);
+    public void init() {
         MockitoAnnotations.openMocks(this);
+        currencyService = new CurrencyService(rateService, CACHE_DURATION);
     }
 
     @Test(expected = InvalidInputDataException.class)
@@ -66,7 +62,7 @@ public class CurrencyServiceTest {
     }
 
     @Test
-    public void testPopulateCache_throwsInvalidInputDataException() throws InvalidInputDataException {
+    public void testPopulateCacheThrowsInvalidInputDataException() throws InvalidInputDataException {
         Mockito.when(rateService.getRate(Mockito.anyString(), Mockito.anyString(), Mockito.anyDouble())).thenThrow(new InvalidInputDataException("Invalid currency"));
 
         currencyCache.getData("USD", "EUR", 10);

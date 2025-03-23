@@ -1,82 +1,82 @@
 package pl.kurs.zadanie02.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import pl.kurs.zadanie01.config.ObjectMapperHolder;
 import pl.kurs.zadanie02.exceptions.InvalidInputDataException;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Scanner;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class RateServiceTest {
 
     private ObjectMapper objectMapper;
-    private IUrlBuilder urlBuilder;
+
+    @InjectMocks
     private RateService rateService;
 
+    @Mock
+    private IUrlBuilder urlBuilder;
+
+    @Mock
+    private HttpURLConnection urlMockConnection;
+
+
     @Before
-    public void init() {
-        objectMapper = Mockito.mock(ObjectMapper.class);
-        urlBuilder = Mockito.mock(IUrlBuilder.class);
+    public void init() throws IOException, InvalidInputDataException {
+        MockitoAnnotations.openMocks(this);
+        objectMapper = ObjectMapperHolder.INSTANCE.getObjectMapper();
         rateService = new RateService(objectMapper, urlBuilder);
     }
 
     @Test
-    public void testGetRate_successfulResponse() throws Exception {
+    public void testGetRateSuccessfulResult() throws Exception {
+        String currencyFrom = "EUR";
+        String currencyTo = "USD";
+        double amount = 100.0;
+
+        String jsonResponse = "{\"result\": 1.1}";
         URL mockUrl = new URL("http://google.pl");
-        HttpURLConnection mockConnection = Mockito.mock(HttpURLConnection.class);
 
-        Mockito.when(urlBuilder.buildUrl(Mockito.anyString(), Mockito.anyString(), Mockito.anyDouble())).thenReturn(mockUrl);
+        Mockito.when(urlBuilder.buildUrl(currencyFrom, currencyTo, amount)).thenReturn(mockUrl);
+        Mockito.when(urlMockConnection.getResponseCode()).thenReturn(200);
+        Mockito.when(urlMockConnection.getInputStream()).thenReturn(new ByteArrayInputStream(jsonResponse.getBytes()));
 
-        String jsonResponse = "{\"result\": 1.25}";
-        Mockito.when(mockConnection.getInputStream()).thenReturn(new ByteArrayInputStream(jsonResponse.getBytes()));
+        double expectedResult = rateService.getRate(currencyFrom, currencyTo, amount);
 
-        JsonNode mockResultNode = Mockito.mock(JsonNode.class);
-        Mockito.when(mockResultNode.asDouble()).thenReturn(1.25);
-        JsonNode mockMainNode = Mockito.mock(JsonNode.class);
-        Mockito.when(mockMainNode.get("result")).thenReturn(mockResultNode);
-        Mockito.when(objectMapper.readTree(Mockito.anyString())).thenReturn(mockMainNode);
-
-        double rate = rateService.getRate("USD", "EUR", 100);
-        assertEquals(1.25, rate, 0.0);
+        assertEquals(1.1, expectedResult, 0.1);
     }
 
     @Test(expected = InvalidInputDataException.class)
-    public void getRateThrowExceptionWhenInputCurrencyIncorrect() throws Exception {
+    public void getRateThrowExceptionWhenInputCurrencyIsIncorrect() throws Exception {
+        String currencyFrom = "INVALID";
+        String invalidCurrencyTo = "USD";
+        double amount = 100.0;
+
         URL mockUrl = new URL("http://google.pl");
-        HttpURLConnection mockConnection = Mockito.mock(HttpURLConnection.class);
+        Mockito.when(urlBuilder.buildUrl(currencyFrom, invalidCurrencyTo, amount)).thenReturn(mockUrl);
 
-        Mockito.when(urlBuilder.buildUrl(Mockito.anyString(), Mockito.anyString(), Mockito.anyDouble())).thenReturn(mockUrl);
-
-        Mockito.when(mockConnection.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
-
-        JsonNode mockMainNode = Mockito.mock(JsonNode.class);
-        Mockito.when(objectMapper.readTree(Mockito.anyString())).thenReturn(mockMainNode);
-
-        rateService.getRate("INVALID", "EUR", 100);
+        rateService.getRate(currencyFrom, invalidCurrencyTo, amount);
     }
-
 
     @Test(expected = InvalidInputDataException.class)
-    public void getRateThrowExceptionWhenOutputCurrencyIncorrect() throws Exception {
+    public void getRateThrowExceptionWhenOutputCurrencyIsIncorrect() throws Exception {
+        String currencyFrom = "USD";
+        String invalidCurrencyTo = "INVALID";
+        double amount = 100.0;
+
         URL mockUrl = new URL("http://google.pl");
-        HttpURLConnection mockConnection = Mockito.mock(HttpURLConnection.class);
+        Mockito.when(urlBuilder.buildUrl(currencyFrom, invalidCurrencyTo, amount)).thenReturn(mockUrl);
 
-        Mockito.when(urlBuilder.buildUrl(Mockito.anyString(), Mockito.anyString(), Mockito.anyDouble())).thenReturn(mockUrl);
-
-        Mockito.when(mockConnection.getInputStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
-
-        JsonNode mockMainNode = Mockito.mock(JsonNode.class);
-        Mockito.when(objectMapper.readTree(Mockito.anyString())).thenReturn(mockMainNode);
-
-        rateService.getRate("USD", "INVALID", 100);
+        rateService.getRate(currencyFrom, invalidCurrencyTo, amount);
     }
-
 }

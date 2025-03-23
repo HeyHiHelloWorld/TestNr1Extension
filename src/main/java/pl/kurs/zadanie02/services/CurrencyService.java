@@ -8,35 +8,32 @@ import java.util.concurrent.TimeUnit;
 public class CurrencyService implements ICurrencyService {
     private IRateService rateService;
     private final long cacheDurationMillis;
-
+    private volatile CurrencyCache currencyCache;
 
     public CurrencyService(IRateService rateService, long cacheDurationSeconds) {
         this.rateService = rateService;
         this.cacheDurationMillis = TimeUnit.SECONDS.toMillis(cacheDurationSeconds);
+        this.currencyCache = new CurrencyCache(cacheDurationMillis, rateService);
     }
 
 
     @Override
-    public synchronized double exchange(String currencyFrom, double amount, String currencyTo) throws InvalidInputDataException {
+    public double exchange(String currencyFrom, double amount, String currencyTo) throws InvalidInputDataException {
         if (amount <= 0) {
-            throw new InvalidInputDataException("Wartość waluty powinna być większa niż 0");
+            throw new InvalidInputDataException("Amount cannot must be positive");
         }
-
         String cacheKey = currencyFrom + "-" + currencyTo;
-        try {
-            CurrencyCache currencyCache = new CurrencyCache(cacheDurationMillis);
+
             Map<String, Double> cacheData = currencyCache.getData(currencyFrom, currencyTo, amount);
             Double rate = cacheData.get(cacheKey);
 
-            if (rate == null) {
-                rate = rateService.getRate(currencyFrom, currencyTo, amount);
-                cacheData.put(cacheKey, rate);
-            }
-
+                if (rate == null) {
+                    synchronized (this) {
+                        rate = rateService.getRate(currencyFrom, currencyTo, amount);
+                        cacheData.put(cacheKey, rate);
+                    }
+                }
             return rate * amount;
-        } catch (Exception e) {
-            throw new InvalidInputDataException("Błąd pobierania danych: " + e.getMessage());
         }
-    }
 
 }

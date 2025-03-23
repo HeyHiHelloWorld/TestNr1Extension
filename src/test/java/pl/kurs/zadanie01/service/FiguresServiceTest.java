@@ -3,10 +3,6 @@ package pl.kurs.zadanie01.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import pl.kurs.zadanie01.config.ObjectMapperHolder;
 import pl.kurs.zadanie01.model.Circle;
 import pl.kurs.zadanie01.model.Figure;
@@ -28,8 +24,6 @@ public class FiguresServiceTest {
     private ShapeFactory shapeFactory;
     private List<Figure> figureList;
     private ObjectMapper objectMapper;
-
-    @InjectMocks
     private FiguresService figuresService;
 
 
@@ -45,7 +39,6 @@ public class FiguresServiceTest {
         figureList.add(shapeFactory.createSquare(3));
         figureList.add(shapeFactory.createRectangle(2, 4));
         figureList.add(null);
-        MockitoAnnotations.openMocks(this);
     }
 
     @Test
