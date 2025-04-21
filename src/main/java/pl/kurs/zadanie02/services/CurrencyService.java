@@ -20,20 +20,20 @@ public class CurrencyService implements ICurrencyService {
     @Override
     public double exchange(String currencyFrom, double amount, String currencyTo) throws InvalidInputDataException {
         if (amount <= 0) {
-            throw new InvalidInputDataException("Amount cannot must be positive");
+            throw new InvalidInputDataException("Amount must be positive");
         }
         String cacheKey = currencyFrom + "-" + currencyTo;
 
-            Map<String, Double> cacheData = currencyCache.getData(currencyFrom, currencyTo, amount);
-            Double rate = cacheData.get(cacheKey);
+        Map<String, Double> cacheData = currencyCache.getData(currencyFrom, currencyTo);
+        Double rate = cacheData.get(cacheKey);
 
-                if (rate == null) {
-                    synchronized (this) {
-                        rate = rateService.getRate(currencyFrom, currencyTo, amount);
-                        cacheData.put(cacheKey, rate);
-                    }
-                }
-            return rate * amount;
+        if (rate == null) {
+            synchronized (this) {
+                rate = rateService.getRate(currencyFrom, currencyTo);
+                cacheData.put(cacheKey, rate);
+            }
         }
+        return rate * amount;
+    }
 
 }

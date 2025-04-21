@@ -7,6 +7,6 @@ public interface AppConfig {
     String CONVERT_FROM = "&from=";
     String AMOUNT = "&amount=";
     String API_KEY_HEADER = "apikey";
-    String PRIVATE_API_KEY = "BnW7ENBiBLBknHJSmAIOb4xax9pdohFL";
+    String PRIVATE_API_KEY_VALUE = "BnW7ENBiBLBknHJSmAIOb4xax9pdohFL";
 
 }

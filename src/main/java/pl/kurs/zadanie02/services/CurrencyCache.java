@@ -19,11 +19,11 @@ public class CurrencyCache {
         this.rateService = rateService;
     }
 
-    public Map<String, Double> getData(String currencyFrom, String currencyTo, double amount) throws InvalidInputDataException {
+    public Map<String, Double> getData(String currencyFrom, String currencyTo) throws InvalidInputDataException {
         long currentTime = System.currentTimeMillis();
         if ((currentTime - creationTime) >= refreshTime) {
             currencyValueMap.clear();
-            populateCache(currencyFrom, currencyTo, amount);
+            populateCache(currencyFrom, currencyTo);
             creationTime = currentTime;
         }
         return currencyValueMap;
@@ -33,8 +33,8 @@ public class CurrencyCache {
         return currencyValueMap.get(key);
     }
 
-    private void populateCache(String currencyFrom, String currencyTo, double amount) throws InvalidInputDataException {
-        double rate = rateService.getRate(currencyFrom, currencyTo, amount);
+    private void populateCache(String currencyFrom, String currencyTo) throws InvalidInputDataException {
+        double rate = rateService.getRate(currencyFrom, currencyTo);
         currencyValueMap.put(currencyFrom + "-" + currencyTo, rate);
     }
 
