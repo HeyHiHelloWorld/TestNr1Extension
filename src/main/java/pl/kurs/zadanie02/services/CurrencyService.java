@@ -25,15 +25,24 @@ public class CurrencyService implements ICurrencyService {
         String cacheKey = currencyFrom + "-" + currencyTo;
 
         Map<String, Double> cacheData = currencyCache.getData(currencyFrom, currencyTo);
-        Double rate = cacheData.get(cacheKey);
+        double rate;
 
-        if (rate == null) {
-            synchronized (this) {
-                rate = rateService.getRate(currencyFrom, currencyTo);
-                cacheData.put(cacheKey, rate);
+        try {
+            rate = cacheData.computeIfAbsent(cacheKey, key -> {
+                try {
+                    return rateService.getRate(currencyFrom, currencyTo);
+                } catch (InvalidInputDataException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof InvalidInputDataException) {
+                throw (InvalidInputDataException) e.getCause();
             }
+
+            throw e;
         }
+
         return rate * amount;
     }
-
 }

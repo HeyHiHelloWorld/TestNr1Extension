@@ -8,6 +8,7 @@ import org.mockito.MockitoAnnotations;
 import pl.kurs.zadanie02.exceptions.InvalidInputDataException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CurrencyServiceTest {
     @Mock
@@ -75,6 +76,28 @@ public class CurrencyServiceTest {
 
         currencyCache.getData("USD", "EUR");
     }
+    @Test
+    public void testValidExchange() throws InvalidInputDataException {
+        double mockRate = 0.9;
+        Mockito.when(rateService.getRate("USD", "EUR")).thenReturn(mockRate);
 
+        double result = currencyService.exchange("USD", 100.0, "EUR");
+        assertEquals(90.0, result, 0.0001);
+
+        double result2 = currencyService.exchange("USD", 50.0, "EUR");
+        assertEquals(45.0, result2, 0.0001);
+
+        Mockito.verify(rateService, Mockito.times(1)).getRate("USD", "EUR");
+    }
+
+    @Test
+    public void testExchangeRateServiceThrows() throws InvalidInputDataException {
+        Mockito.when(rateService.getRate("USD", "EUR")).thenThrow(new InvalidInputDataException("Test exception"));
+
+        InvalidInputDataException thrown = assertThrows(InvalidInputDataException.class, () -> {
+            currencyService.exchange("USD", 100.0, "EUR");
+        });
+        assertEquals("Test exception", thrown.getMessage());
+    }
 
 }
