@@ -2,20 +2,18 @@ package pl.kurs.zadanie02.services;
 
 import pl.kurs.zadanie02.exceptions.InvalidInputDataException;
 
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
 public class CurrencyService implements ICurrencyService {
-    private IRateService rateService;
+    private final IRateService rateService;
     private final long cacheDurationMillis;
-    private volatile CurrencyCache currencyCache;
+    private CurrencyCacheService<String, Double> cache;
 
-    public CurrencyService(IRateService rateService, long cacheDurationSeconds) {
+    public CurrencyService(IRateService rateService, long cacheDurationMillis) {
         this.rateService = rateService;
-        this.cacheDurationMillis = TimeUnit.SECONDS.toMillis(cacheDurationSeconds);
-        this.currencyCache = new CurrencyCache(cacheDurationMillis, rateService);
+        this.cacheDurationMillis = cacheDurationMillis;
+        this.cache = new CurrencyCacheService<>();
     }
-
 
     @Override
     public double exchange(String currencyFrom, double amount, String currencyTo) throws InvalidInputDataException {
@@ -24,23 +22,15 @@ public class CurrencyService implements ICurrencyService {
         }
         String cacheKey = currencyFrom + "-" + currencyTo;
 
-        Map<String, Double> cacheData = currencyCache.getData(currencyFrom, currencyTo);
+        Optional<Double> cachedRate = cache.get(cacheKey);
+
         double rate;
 
-        try {
-            rate = cacheData.computeIfAbsent(cacheKey, key -> {
-                try {
-                    return rateService.getRate(currencyFrom, currencyTo);
-                } catch (InvalidInputDataException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        } catch (RuntimeException e) {
-            if (e.getCause() instanceof InvalidInputDataException) {
-                throw (InvalidInputDataException) e.getCause();
-            }
-
-            throw e;
+        if (cachedRate.isPresent()) {
+            rate = cachedRate.get();
+        } else {
+            rate = rateService.getRate(currencyFrom, currencyTo);
+            cache.compute(cacheKey, rate);
         }
 
         return rate * amount;

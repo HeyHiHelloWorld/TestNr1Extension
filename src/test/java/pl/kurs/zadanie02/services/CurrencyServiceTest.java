@@ -14,7 +14,6 @@ public class CurrencyServiceTest {
     @Mock
     private IRateService rateService;
 
-    private CurrencyCache currencyCache;
     private CurrencyService currencyService;
 
 
@@ -22,7 +21,6 @@ public class CurrencyServiceTest {
     public void init() {
         MockitoAnnotations.openMocks(this);
         currencyService = new CurrencyService(rateService, 60);
-        currencyCache = new CurrencyCache(60, rateService);
     }
 
     @Test(expected = InvalidInputDataException.class)
@@ -62,7 +60,7 @@ public class CurrencyServiceTest {
         double result1 = currencyService.exchange(from, 100.0, to);
         assertEquals(75.0, result1, 0.01);
 
-        Thread.sleep(1200);
+        Thread.sleep(12000);
 
         double result2 = currencyService.exchange(from, 100.0, to);
         assertEquals(80.0, result2, 0.01);
@@ -73,9 +71,12 @@ public class CurrencyServiceTest {
     @Test
     public void testPopulateCacheThrowsInvalidInputDataException() throws InvalidInputDataException {
         Mockito.when(rateService.getRate(Mockito.anyString(), Mockito.anyString())).thenThrow(new InvalidInputDataException("Invalid currency"));
-
-        currencyCache.getData("USD", "EUR");
+        InvalidInputDataException thrown = assertThrows(InvalidInputDataException.class, () -> {
+            currencyService.exchange("USD", 100.0, "EUR");
+        });
+        assertEquals("Invalid currency", thrown.getMessage());
     }
+
     @Test
     public void testValidExchange() throws InvalidInputDataException {
         double mockRate = 0.9;
@@ -91,7 +92,7 @@ public class CurrencyServiceTest {
     }
 
     @Test
-    public void testExchangeRateServiceThrows() throws InvalidInputDataException {
+    public void shouldExchangeRateThrowException() throws InvalidInputDataException {
         Mockito.when(rateService.getRate("USD", "EUR")).thenThrow(new InvalidInputDataException("Test exception"));
 
         InvalidInputDataException thrown = assertThrows(InvalidInputDataException.class, () -> {
