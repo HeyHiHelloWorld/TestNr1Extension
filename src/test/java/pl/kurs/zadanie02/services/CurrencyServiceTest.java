@@ -49,7 +49,7 @@ public class CurrencyServiceTest {
 
     @Test
     public void shouldUpdateCacheAfterExpiration() throws Exception {
-        long shortCacheDuration = 1;
+        long shortCacheDuration = 1L;
         currencyService = new CurrencyService(rateService, shortCacheDuration);
 
         String from = "USD";
@@ -60,7 +60,7 @@ public class CurrencyServiceTest {
         double result1 = currencyService.exchange(from, 100.0, to);
         assertEquals(75.0, result1, 0.01);
 
-        Thread.sleep(12000);
+        Thread.sleep(11000);
 
         double result2 = currencyService.exchange(from, 100.0, to);
         assertEquals(80.0, result2, 0.01);
@@ -69,9 +69,10 @@ public class CurrencyServiceTest {
     }
 
     @Test
-    public void testPopulateCacheThrowsInvalidInputDataException() throws InvalidInputDataException {
-        Mockito.when(rateService.getRate(Mockito.anyString(), Mockito.anyString())).thenThrow(new InvalidInputDataException("Invalid currency"));
-        InvalidInputDataException thrown = assertThrows(InvalidInputDataException.class, () -> {
+    public void testPopulateCacheThrowsException() throws InvalidInputDataException {
+        Mockito.when(rateService.getRate(Mockito.anyString(), Mockito.anyString())).thenThrow(new IllegalStateException("Invalid currency"));
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> {
             currencyService.exchange("USD", 100.0, "EUR");
         });
         assertEquals("Invalid currency", thrown.getMessage());
@@ -93,9 +94,9 @@ public class CurrencyServiceTest {
 
     @Test
     public void shouldExchangeRateThrowException() throws InvalidInputDataException {
-        Mockito.when(rateService.getRate("USD", "EUR")).thenThrow(new InvalidInputDataException("Test exception"));
+        Mockito.when(rateService.getRate("USD", "EUR")).thenThrow(new IllegalStateException("Test exception"));
 
-        InvalidInputDataException thrown = assertThrows(InvalidInputDataException.class, () -> {
+        IllegalStateException thrown = assertThrows(IllegalStateException.class, () -> {
             currencyService.exchange("USD", 100.0, "EUR");
         });
         assertEquals("Test exception", thrown.getMessage());

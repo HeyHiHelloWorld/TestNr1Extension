@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class CurrencyCacheService<K, V> implements ICurrencyCache<K, V> {
@@ -48,10 +49,13 @@ public class CurrencyCacheService<K, V> implements ICurrencyCache<K, V> {
     }
 
     private boolean isExpired(K key) {
-        LocalDateTime expirationDateTime =
-                cacheValueMap.get(key)
-                        .getCreatedAt()
-                        .plus(cacheTimeout, ChronoUnit.MILLIS);
+        CacheValue<V> cacheValue = cacheValueMap.get(key);
+        if (cacheValue == null) {
+            return true;
+        }
+        LocalDateTime expirationDateTime = cacheValue
+                .getCreatedAt()
+                .plus(cacheTimeout, ChronoUnit.MILLIS);
         return LocalDateTime.now().isAfter(expirationDateTime);
 
     }
@@ -59,8 +63,10 @@ public class CurrencyCacheService<K, V> implements ICurrencyCache<K, V> {
     @Override
     public Optional<V> get(K key) {
         clean();
-        return Optional.ofNullable(cacheValueMap.computeIfPresent(key, (k, v) -> isExpired(k) ? null : v))
-                .map(CacheValue::getValue);
+        CacheValue<V> cacheValue = cacheValueMap.get(key);
+        return cacheValue != null && !isExpired(key) ?
+                Optional.of(cacheValue.getValue()) :
+                Optional.empty();
     }
 
     @Override
@@ -93,6 +99,16 @@ public class CurrencyCacheService<K, V> implements ICurrencyCache<K, V> {
         cacheValueMap.compute(key, (k, v) -> createCacheValue(value));
     }
 
+    @Override
+    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+        return cacheValueMap.compute(key, (k, existingValue) -> {
+            if (existingValue == null || isExpired(k)) {
+                V newValue = mappingFunction.apply(k);
+                return createCacheValue(newValue);
+            }
+            return existingValue;
+        }).getValue();
+    }
 
     protected interface CacheValue<V> {
         V getValue();
@@ -101,5 +117,3 @@ public class CurrencyCacheService<K, V> implements ICurrencyCache<K, V> {
     }
 
 }
-
-

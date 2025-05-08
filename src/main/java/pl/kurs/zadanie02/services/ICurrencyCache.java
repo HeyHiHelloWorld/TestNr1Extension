@@ -1,6 +1,7 @@
 package pl.kurs.zadanie02.services;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 public interface ICurrencyCache<K, V> {
     void clean();
@@ -17,5 +18,6 @@ public interface ICurrencyCache<K, V> {
 
     void compute(K key, V value);
 
+    V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction);
 
 }

@@ -2,8 +2,6 @@ package pl.kurs.zadanie02.services;
 
 import pl.kurs.zadanie02.exceptions.InvalidInputDataException;
 
-import java.util.Optional;
-
 public class CurrencyService implements ICurrencyService {
     private final IRateService rateService;
     private final long cacheDurationMillis;
@@ -22,17 +20,13 @@ public class CurrencyService implements ICurrencyService {
         }
         String cacheKey = currencyFrom + "-" + currencyTo;
 
-        Optional<Double> cachedRate = cache.get(cacheKey);
-
-        double rate;
-
-        if (cachedRate.isPresent()) {
-            rate = cachedRate.get();
-        } else {
-            rate = rateService.getRate(currencyFrom, currencyTo);
-            cache.compute(cacheKey, rate);
-        }
-
+        double rate = cache.computeIfAbsent(cacheKey, k -> {
+            try {
+                return rateService.getRate(currencyFrom, currencyTo);
+            } catch (InvalidInputDataException e) {
+                throw new IllegalStateException("Failed to fetch rate", e);
+            }
+        });
         return rate * amount;
     }
 }
